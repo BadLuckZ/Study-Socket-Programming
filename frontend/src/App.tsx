@@ -24,13 +24,11 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "connect" (พบว่ามี User เชื่อมต่อ) Code นี้จะทำงาน
     newSocket.on("connect", () => {
-      console.log("Frontend: User connected");
       setConnected(true);
     });
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "disconnect" (พบว่ามี User ไม่เชื่อมต่อแล้ว) Code นี้จะทำงาน
     newSocket.on("disconnect", () => {
-      console.log("Frontend: User disconnected");
       setConnected(false);
     });
 
@@ -45,6 +43,7 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "messages" Code ชุดนี้จะทำงาน
     socket.on("messages", (newMessages: Message[]) => {
+      console.log(newMessages);
       setMessages(newMessages);
     });
 
@@ -92,9 +91,16 @@ export default function App() {
       <header className="sticky top-0 bg-primary text-primary-foreground py-3 px-4 shadow-md flex justify-between items-center">
         <h1 className="text-xl font-bold">Chat Testing</h1>
         <div className="flex gap-4 items-center">
-          <span className="text-xs text-secondary-foreground px-2 py-1 rounded-full bg-secondary shadow hover:opacity-90 transition">
-            {isConnected ? "Connected" : "Disconnected"}
-          </span>
+          <div className="flex items-center gap-2 text-secondary-foreground px-3 py-1 rounded-full bg-secondary shadow hover:opacity-90 transition">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                isConnected ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></div>
+            <span className="text-xs font-semibold text-secondary-foreground">
+              {isConnected ? "Connected" : "Disconnected"}
+            </span>
+          </div>
           <button
             onClick={() => {
               toggleTheme();
@@ -132,9 +138,7 @@ export default function App() {
                   </span>
                 )}{" "}
                 <span>{msg.text}</span>
-                <span className="text-[10px] text-muted-foreground ml-2">
-                  {time}
-                </span>
+                <span className="text-[10px] text-foreground ml-2">{time}</span>
               </li>
             );
           })}
