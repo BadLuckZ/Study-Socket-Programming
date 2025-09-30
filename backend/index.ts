@@ -1,18 +1,13 @@
 import express from "express";
-import cors from "cors";
+import { createServer } from "node:http";
 
 const app = express();
-app.use(cors());
+const server = createServer(app);
 
-app.get("/api/test", (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: {
-      message: "Connection Successful!",
-    },
-  });
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Hello World!" });
 });
 
-app.listen(5000, () => {
-  console.log("Server running at port 5000...");
+server.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
 });
