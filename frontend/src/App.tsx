@@ -1,10 +1,11 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { IP, PORT } from "../../backend/config";
+import { MY_IP, SERVER_IP, PORT } from "../../backend/utils/config";
+import type { Message } from "../../backend/utils/interface";
 
 export default function App() {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState(1); // 0: dark, 1: light
   const [isConnected, setConnected] = useState(false);
@@ -14,7 +15,7 @@ export default function App() {
   // Socket: Initialization
   useEffect(() => {
     // สร้าง Client Socket
-    const newSocket = io(`${IP}:${PORT}`, {
+    const newSocket = io(`${SERVER_IP}:${PORT}`, {
       transports: ["websocket"],
     });
 
@@ -43,7 +44,7 @@ export default function App() {
     if (!socket) return;
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "messages" Code ชุดนี้จะทำงาน
-    socket.on("messages", (newMessages: string[]) => {
+    socket.on("messages", (newMessages: Message[]) => {
       setMessages(newMessages);
     });
 
@@ -64,8 +65,13 @@ export default function App() {
     e.preventDefault();
     if (!input.trim() || !socket) return;
 
+    const msg: Message = {
+      user: MY_IP,
+      text: input,
+    };
+
     // ส่ง "message" ไปให้ Server Socket พร้อม 1 ข้อมูล คือ input
-    socket.emit("message", input);
+    socket.emit("message", msg);
     setInput("");
   };
 
@@ -103,7 +109,7 @@ export default function App() {
       {/* Messages */}
       <ul className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length > 0 &&
-          messages.map((msg, index) => (
+          messages.map((msg: Message, index) => (
             <li
               key={index}
               className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm animate-fadeIn ${
@@ -112,7 +118,8 @@ export default function App() {
                   : "self-end bg-primary text-primary-foreground"
               }`}
             >
-              {msg}
+              <span className="text-xs text-muted-foreground">{msg.user}:</span>{" "}
+              {msg.text}
             </li>
           ))}
       </ul>
