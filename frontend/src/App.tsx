@@ -68,6 +68,7 @@ export default function App() {
     const msg: Message = {
       user: MY_IP,
       text: input,
+      timestamp: new Date().toISOString(),
     };
 
     // ส่ง "message" ไปให้ Server Socket พร้อม 1 ข้อมูล คือ input
@@ -109,19 +110,34 @@ export default function App() {
       {/* Messages */}
       <ul className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length > 0 &&
-          messages.map((msg: Message, index) => (
-            <li
-              key={index}
-              className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm animate-fadeIn ${
-                index % 2 === 0
-                  ? "self-start bg-card text-card-foreground border border-border"
-                  : "self-end bg-primary text-primary-foreground"
-              }`}
-            >
-              <span className="text-xs text-muted-foreground">{msg.user}:</span>{" "}
-              {msg.text}
-            </li>
-          ))}
+          messages.map((msg: Message, index) => {
+            const isMe = msg.user === MY_IP;
+            const time = new Date(msg.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return (
+              <li
+                key={index}
+                className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm animate-fadeIn ${
+                  isMe
+                    ? "self-end bg-primary text-primary-foreground"
+                    : "self-start bg-card text-card-foreground border border-border"
+                }`}
+              >
+                {!isMe && (
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {msg.user}:
+                  </span>
+                )}{" "}
+                <span>{msg.text}</span>
+                <span className="text-[10px] text-muted-foreground ml-2">
+                  {time}
+                </span>
+              </li>
+            );
+          })}
       </ul>
 
       {/* Form */}
