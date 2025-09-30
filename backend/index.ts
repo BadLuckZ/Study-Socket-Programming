@@ -14,10 +14,10 @@ async function startServer() {
   );
 
   // เก็บข้อความทั้งหมดใน memory ของ process นี้
-  let messages: Message[] = [];
+  const messages: Message[] = [];
 
   // เก็บ User ทั้งหมดที่กำลังพิมพ์อยู่
-  let userTyping: string[] = [];
+  const userTyping = new Set<string>();
 
   const server = createServer(app);
   const io = new Server(server);
@@ -38,8 +38,9 @@ async function startServer() {
     socket.on("message", (msg: Message) => {
       // เก็บ message ใหม่ไว้ใน messages
       messages.push(msg);
+
       // ลบ user ออกจาก userTyping
-      userTyping = userTyping.filter((user) => user != msg.user);
+      userTyping.delete(msg.user);
 
       // ส่ง "messages" ไปให้ Client Socket ทุกคนพร้อม 1 ข้อมูล คือ messages
       io.emit("messages", messages);
@@ -50,10 +51,10 @@ async function startServer() {
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
     socket.on("typing", (user: string) => {
-      if (!userTyping.includes(user)) userTyping.push(user);
+      userTyping.add(user);
 
       // ส่ง "typing" ไปให้ Client Socket ทุกคนยกเว้นคนที่พิมพ์พร้อม 1 ข้อมูล คือ userTyping
-      socket.broadcast.emit("typing", userTyping);
+      socket.broadcast.emit("typing", Array.from(userTyping));
     });
   });
 

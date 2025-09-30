@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { MY_IP, SERVER_IP, PORT } from "../../backend/utils/config";
 import type { Message } from "../../backend/utils/interface";
@@ -11,6 +11,13 @@ export default function App() {
   const [isConnected, setConnected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto Scroll to the last message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Socket: Initialization
   useEffect(() => {
@@ -43,16 +50,12 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "messages" Code ชุดนี้จะทำงาน
     socket.on("messages", (newMessages: Message[]) => {
-      console.log(newMessages);
       setMessages(newMessages);
     });
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
-    socket.on("typing", (user: string) => {
-      setTypingUsers((prev) => {
-        if (!prev.includes(user)) return [...prev, user];
-        return prev;
-      });
+    socket.on("typing", (users: string[]) => {
+      setTypingUsers(users);
     });
 
     return () => {
@@ -158,6 +161,7 @@ export default function App() {
               </li>
             );
           })}
+        <div ref={messagesEndRef} />
       </ul>
 
       {/* Typing indicator */}
