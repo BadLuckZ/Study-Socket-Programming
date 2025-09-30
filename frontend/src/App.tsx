@@ -40,8 +40,9 @@ export default function App() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("messages", (msg: string) => {
-      setMessages((prev) => [...prev, msg]);
+    // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "messages" Code ชุดนี้จะทำงาน
+    socket.on("messages", (newMessages: string[]) => {
+      setMessages(newMessages);
     });
 
     return () => {
@@ -64,6 +65,16 @@ export default function App() {
     // ส่ง "message" ไปให้ Server Socket พร้อม 1 ข้อมูล คือ input
     socket.emit("message", input);
     setInput("");
+  };
+
+  const handleConnect = () => {
+    if (!socket) return;
+
+    if (isConnected) {
+      socket.disconnect();
+    } else {
+      socket.connect();
+    }
   };
 
   return (
@@ -93,18 +104,19 @@ export default function App() {
 
       {/* Messages */}
       <ul className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((msg, index) => (
-          <li
-            key={index}
-            className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm animate-fadeIn ${
-              index % 2 === 0
-                ? "self-start bg-card text-card-foreground border border-border"
-                : "self-end bg-primary text-primary-foreground"
-            }`}
-          >
-            {msg}
-          </li>
-        ))}
+        {messages.length > 0 &&
+          messages.map((msg, index) => (
+            <li
+              key={index}
+              className={`max-w-[75%] px-4 py-2 rounded-lg shadow text-sm animate-fadeIn ${
+                index % 2 === 0
+                  ? "self-start bg-card text-card-foreground border border-border"
+                  : "self-end bg-primary text-primary-foreground"
+              }`}
+            >
+              {msg}
+            </li>
+          ))}
       </ul>
 
       {/* Form */}
@@ -127,6 +139,13 @@ export default function App() {
           className="bg-primary cursor-pointer text-primary-foreground font-medium px-4 py-2 rounded-full shadow-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send
+        </button>
+        <button
+          type="button"
+          onClick={handleConnect}
+          className="bg-primary cursor-pointer text-primary-foreground font-medium px-4 py-2 rounded-full shadow-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isConnected ? "Disconnect" : "Connect"}
         </button>
       </form>
     </div>

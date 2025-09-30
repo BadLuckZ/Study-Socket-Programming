@@ -11,12 +11,17 @@ app.use(
   })
 );
 
+const messages: string[] = [];
+
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, { connectionStateRecovery: {} });
 
 // เมื่อไหร่ก็ตามที่มีการเรียกใช้ Server Socket ของ localhost:3000 Code ชุดนึ้จะทำงาน
 io.on("connection", (socket) => {
   console.log("Backend: User connected");
+
+  // ส่ง "messages" ไปให้ Client Socket พร้อม 1 ข้อมูล คือ messages
+  socket.emit("messages", messages);
 
   // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "disconnect" (พบว่า User ออกจากหน้าที่ Socket นี้ดูอยู่) Code ชุดนี้จะทำงาน
   socket.on("disconnect", () => {
@@ -25,8 +30,10 @@ io.on("connection", (socket) => {
 
   // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "message" Code ชุดนี้จะทำงาน
   socket.on("message", (msg) => {
-    // ส่ง "messages" ไปให้ Client Socket พร้อม 1 ข้อมูล คือ msg
-    io.emit("messages", msg);
+    // เก็บ message ใหม่ไว้ใน messages
+    messages.push(msg);
+    // ส่ง "messages" ไปให้ Client Socket พร้อม 1 ข้อมูล คือ messages
+    io.emit("messages", messages);
   });
 });
 
