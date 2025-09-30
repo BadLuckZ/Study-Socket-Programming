@@ -2,12 +2,12 @@ import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import cors from "cors";
+import { PORT, IP } from "./config";
 
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
+    origin: "*",
   })
 );
 
@@ -16,7 +16,7 @@ const messages: string[] = [];
 const server = createServer(app);
 const io = new Server(server, { connectionStateRecovery: {} });
 
-// เมื่อไหร่ก็ตามที่มีการเรียกใช้ Server Socket ของ localhost:3000 Code ชุดนึ้จะทำงาน
+// เมื่อไหร่ก็ตามที่มีการเรียกใช้ Server Socket Code ชุดนึ้จะทำงาน
 io.on("connection", (socket) => {
   console.log("Backend: User connected");
 
@@ -37,6 +37,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+server.listen(PORT, () => {
+  console.log(`Server running at ${IP}:${PORT}`);
 });

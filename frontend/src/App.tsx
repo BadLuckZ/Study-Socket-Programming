@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { IP, PORT } from "../../backend/config";
 
 export default function App() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -12,11 +13,12 @@ export default function App() {
 
   // Socket: Initialization
   useEffect(() => {
-    const newSocket = io("http://localhost:3000", {
+    // สร้าง Client Socket
+    const newSocket = io(`${IP}:${PORT}`, {
       transports: ["websocket"],
     });
 
-    // เก็บ Socket ของ localhost:3000 เอาไว้ เป็น Client Socket
+    // เก็บ Client Socket
     setSocket(newSocket);
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "connect" (พบว่ามี User เชื่อมต่อ) Code นี้จะทำงาน
@@ -83,11 +85,7 @@ export default function App() {
       <header className="sticky top-0 bg-primary text-primary-foreground py-3 px-4 shadow-md flex justify-between items-center">
         <h1 className="text-xl font-bold">Chat Testing</h1>
         <div className="flex gap-4 items-center">
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${
-              isConnected ? "text-green-500 bg-white" : "text-red-500 bg-white"
-            }`}
-          >
+          <span className="text-xs text-secondary-foreground px-2 py-1 rounded-full bg-secondary shadow hover:opacity-90 transition">
             {isConnected ? "Connected" : "Disconnected"}
           </span>
           <button
