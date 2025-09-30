@@ -16,11 +16,16 @@ const io = new Server(server);
 
 // เมื่อไหร่ก็ตามที่มีการเรียกใช้ Socket จาก localhost:3000 Code ชุดนึ้จะทำงาน
 io.on("connection", (socket) => {
-  console.log("user connected");
+  console.log("Backend: User connected");
 
-  // เมื่อไหร่ก็ตามที่ Socket พบว่า User ออกจากหน้าที่ Socket นี้ดูอยู่ Code ชุดนี้จะทำงาน
+  // เมื่อไหร่ก็ตามที่ Socket ได้รับ "disconnect" (พบว่า User ออกจากหน้าที่ Socket นี้ดูอยู่) Code ชุดนี้จะทำงาน
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log("Backend: User disconnected");
+  });
+
+  // เมื่อไหร่ก็ตามที่ Socket ได้รับ "message" Code ชุดนี้จะทำงาน
+  socket.on("message", (msg) => {
+    console.log("Backend: User send `" + msg + "`");
   });
 });
 
