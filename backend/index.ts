@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import cors from "cors";
-import { PORT, SERVER_IP } from "./utils/config";
+import { SERVER_PORT, SERVER_IP } from "./utils/config";
 import { Message } from "./utils/interface";
 
 async function startServer() {
@@ -24,14 +24,14 @@ async function startServer() {
 
   // เมื่อไหร่ก็ตามที่มีการเรียกใช้ Server Socket Code ชุดนี้จะทำงาน
   io.on("connection", (socket) => {
-    console.log(`Backend: User ${socket.id} connected`);
+    // console.log(`Backend: User ${socket.id} connected`);
 
     // ส่ง "messages" ไปให้ Client Socket พร้อม 1 ข้อมูล คือ messages
     socket.emit("messages", messages);
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "disconnect" (พบว่า User ออกจากหน้าที่ Socket นี้ดูอยู่) Code ชุดนี้จะทำงาน
     socket.on("disconnect", () => {
-      console.log(`Backend: User ${socket.id} disconnected`);
+      // console.log(`Backend: User ${socket.id} disconnected`);
     });
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "message" Code ชุดนี้จะทำงาน
@@ -50,11 +50,11 @@ async function startServer() {
     });
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
-    socket.on("typing", (user: string, message: string) => {
+    socket.on("typing", (userId: string, message: string) => {
       if (message.trim() != "") {
-        userTyping.add(user);
+        userTyping.add(userId);
       } else {
-        userTyping.delete(user);
+        userTyping.delete(userId);
       }
 
       // ส่ง "typing" ไปให้ Client Socket ทุกคนยกเว้นคนที่พิมพ์พร้อม 1 ข้อมูล คือ userTyping
@@ -62,8 +62,8 @@ async function startServer() {
     });
   });
 
-  server.listen(PORT, () => {
-    console.log(`Server running at ${SERVER_IP}:${PORT}`);
+  server.listen(SERVER_PORT, () => {
+    console.log(`Server running at ${SERVER_IP}:${SERVER_PORT}`);
   });
 }
 

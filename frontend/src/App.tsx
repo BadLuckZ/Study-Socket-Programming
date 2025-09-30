@@ -1,17 +1,30 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { SERVER_IP, PORT } from "../../backend/utils/config";
+import { SERVER_IP, SERVER_PORT, MY_IP } from "../../backend/utils/config";
 import type { Message } from "../../backend/utils/interface";
 
 export default function App() {
+  const [port, setPort] = useState("");
+  useEffect(() => {
+    const currentPort = window.location.port;
+    setPort(currentPort);
+  }, []);
+
+  const [userId, setUserId] = useState("");
+  useEffect(() => {
+    if (!port) return;
+    const id = MY_IP + ":" + port;
+    setUserId(id);
+    console.log("User ID:", id);
+  }, [port]);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState(1); // 0: dark, 1: light
   const [isConnected, setConnected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto Scroll to the last message
@@ -22,7 +35,7 @@ export default function App() {
   // Socket: Initialization
   useEffect(() => {
     // สร้าง Client Socket
-    const newSocket = io(`${SERVER_IP}:${PORT}`, {
+    const newSocket = io(`${SERVER_IP}:${SERVER_PORT}`, {
       transports: ["websocket"],
     });
 
@@ -55,7 +68,7 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
     socket.on("typing", (users: string[]) => {
-      const otherUsers = users.filter((user) => user != socket.id);
+      const otherUsers = users.filter((user) => user != userId);
       setTypingUsers(otherUsers);
     });
 
@@ -77,7 +90,7 @@ export default function App() {
     setInput(e.target.value);
     if (!socket) return;
 
-    socket.emit("typing", socket.id, e.target.value);
+    socket.emit("typing", userId, e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,7 +98,7 @@ export default function App() {
     if (!input.trim() || !socket) return;
 
     const msg: Message = {
-      user: socket.id || "unknown",
+      user: userId,
       text: input,
       timestamp: new Date().toISOString(),
     };
@@ -162,6 +175,7 @@ export default function App() {
               </li>
             );
           })}
+
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
           <div className="px-4 py-1 text-xs text-muted-foreground">
