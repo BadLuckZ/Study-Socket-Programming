@@ -9,8 +9,8 @@ export default function App() {
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState(1); // 0: dark, 1: light
   const [isConnected, setConnected] = useState(false);
-
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   // Socket: Initialization
   useEffect(() => {
@@ -47,8 +47,17 @@ export default function App() {
       setMessages(newMessages);
     });
 
+    // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
+    socket.on("typing", (user: string) => {
+      setTypingUsers((prev) => {
+        if (!prev.includes(user)) return [...prev, user];
+        return prev;
+      });
+    });
+
     return () => {
       socket.off("messages");
+      socket.off("typing");
     };
   }, [socket]);
 
@@ -58,6 +67,13 @@ export default function App() {
     } else {
       setTheme(0);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+    if (!socket) return;
+
+    socket.emit("typing", MY_IP);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -144,6 +160,16 @@ export default function App() {
           })}
       </ul>
 
+      {/* Typing indicator */}
+      <div className="px-4 py-1 text-xs text-muted-foreground">
+        {typingUsers.length > 0 && (
+          <span>
+            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+            typing...
+          </span>
+        )}
+      </div>
+
       {/* Form */}
       <form
         onSubmit={handleSubmit}
@@ -152,7 +178,7 @@ export default function App() {
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           className="flex-grow mx-2 px-4 py-2 rounded-full border border-input focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground placeholder-muted-foreground"
           placeholder="Type a message..."
           autoComplete="off"
