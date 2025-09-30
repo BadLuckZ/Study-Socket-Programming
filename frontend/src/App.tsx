@@ -9,21 +9,23 @@ export default function App() {
   const [isConnected, setConnected] = useState(false);
 
   const [socket, setSocket] = useState<Socket | null>(null);
+
+  // Socket: Initialization
   useEffect(() => {
     const newSocket = io("http://localhost:3000", {
       transports: ["websocket"],
     });
 
-    // เก็บ Socket ของ localhost:3000 เอาไว้
+    // เก็บ Socket ของ localhost:3000 เอาไว้ เป็น Client Socket
     setSocket(newSocket);
 
-    // เมื่อไหร่ก็ตามที่ Socket ได้รับ "connect" (พบว่ามี User เชื่อมต่อ) Code นี้จะทำงาน
+    // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "connect" (พบว่ามี User เชื่อมต่อ) Code นี้จะทำงาน
     newSocket.on("connect", () => {
       console.log("Frontend: User connected");
       setConnected(true);
     });
 
-    // เมื่อไหร่ก็ตามที่ Socket ได้รับ "disconnect" (พบว่ามี User ไม่เชื่อมต่อแล้ว) Code นี้จะทำงาน
+    // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "disconnect" (พบว่ามี User ไม่เชื่อมต่อแล้ว) Code นี้จะทำงาน
     newSocket.on("disconnect", () => {
       console.log("Frontend: User disconnected");
       setConnected(false);
@@ -33,6 +35,19 @@ export default function App() {
       newSocket.close();
     };
   }, []);
+
+  // Socket: Messages
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messages", (msg: string) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => {
+      socket.off("messages");
+    };
+  }, [socket]);
 
   const toggleTheme = () => {
     if (theme == 0) {
@@ -44,14 +59,11 @@ export default function App() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !socket) return;
 
-    if (socket) {
-      // ส่ง message ไปให้ Socket พร้อม 1 ข้อมูลอย่าง input
-      socket.emit("message", input);
-      setMessages([...messages, input]);
-      setInput("");
-    }
+    // ส่ง "message" ไปให้ Server Socket พร้อม 1 ข้อมูล คือ input
+    socket.emit("message", input);
+    setInput("");
   };
 
   return (
