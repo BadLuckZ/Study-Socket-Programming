@@ -1,11 +1,25 @@
 import { Moon, Sun } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 export default function App() {
   const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
-  const [theme, setTheme] = useState(1);
-  // 0: dark, 1: light
+  const [theme, setTheme] = useState(1); // 0: dark, 1: light
+
+  const [socket, setSocket] = useState<Socket | null>(null);
+  useEffect(() => {
+    const newSocket = io("http://localhost:3000", {
+      transports: ["websocket"],
+    });
+
+    // เก็บ Socket ของ localhost:3000 เอาไว้
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.close();
+    };
+  }, []);
 
   const toggleTheme = () => {
     if (theme == 0) {
