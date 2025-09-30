@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { MY_IP, SERVER_IP, PORT } from "../../backend/utils/config";
+import { SERVER_IP, PORT } from "../../backend/utils/config";
 import type { Message } from "../../backend/utils/interface";
 
 export default function App() {
@@ -55,7 +55,7 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
     socket.on("typing", (users: string[]) => {
-      const otherUsers = users.filter((user) => user != MY_IP);
+      const otherUsers = users.filter((user) => user != socket.id);
       setTypingUsers(otherUsers);
     });
 
@@ -77,7 +77,7 @@ export default function App() {
     setInput(e.target.value);
     if (!socket) return;
 
-    socket.emit("typing", MY_IP, e.target.value);
+    socket.emit("typing", socket.id, e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,7 +85,7 @@ export default function App() {
     if (!input.trim() || !socket) return;
 
     const msg: Message = {
-      user: MY_IP,
+      user: socket.id || "unknown",
       text: input,
       timestamp: new Date().toISOString(),
     };
@@ -137,7 +137,7 @@ export default function App() {
       <ul className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length > 0 &&
           messages.map((msg: Message, index) => {
-            const isMe = msg.user === MY_IP;
+            const isMe = msg.user === socket?.id;
             const time = new Date(msg.timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",

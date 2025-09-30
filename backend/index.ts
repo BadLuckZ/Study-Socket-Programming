@@ -24,14 +24,14 @@ async function startServer() {
 
   // เมื่อไหร่ก็ตามที่มีการเรียกใช้ Server Socket Code ชุดนี้จะทำงาน
   io.on("connection", (socket) => {
-    console.log("Backend: User connected");
+    console.log(`Backend: User ${socket.id} connected`);
 
     // ส่ง "messages" ไปให้ Client Socket พร้อม 1 ข้อมูล คือ messages
     socket.emit("messages", messages);
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "disconnect" (พบว่า User ออกจากหน้าที่ Socket นี้ดูอยู่) Code ชุดนี้จะทำงาน
     socket.on("disconnect", () => {
-      console.log("Backend: User disconnected");
+      console.log(`Backend: User ${socket.id} disconnected`);
     });
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "message" Code ชุดนี้จะทำงาน
