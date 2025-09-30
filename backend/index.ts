@@ -50,8 +50,12 @@ async function startServer() {
     });
 
     // เมื่อไหร่ก็ตามที่ Server Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
-    socket.on("typing", (user: string) => {
-      userTyping.add(user);
+    socket.on("typing", (user: string, message: string) => {
+      if (message.trim() != "") {
+        userTyping.add(user);
+      } else {
+        userTyping.delete(user);
+      }
 
       // ส่ง "typing" ไปให้ Client Socket ทุกคนยกเว้นคนที่พิมพ์พร้อม 1 ข้อมูล คือ userTyping
       socket.broadcast.emit("typing", Array.from(userTyping));

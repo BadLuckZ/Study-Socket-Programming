@@ -55,7 +55,8 @@ export default function App() {
 
     // เมื่อไหร่ก็ตามที่ Client Socket ได้รับ "typing" Code ชุดนี้จะทำงาน
     socket.on("typing", (users: string[]) => {
-      setTypingUsers(users);
+      const otherUsers = users.filter((user) => user != MY_IP);
+      setTypingUsers(otherUsers);
     });
 
     return () => {
@@ -76,7 +77,7 @@ export default function App() {
     setInput(e.target.value);
     if (!socket) return;
 
-    socket.emit("typing", MY_IP);
+    socket.emit("typing", MY_IP, e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -161,18 +162,17 @@ export default function App() {
               </li>
             );
           })}
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-1 text-xs text-muted-foreground">
+            <span>
+              {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+              typing...
+            </span>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </ul>
-
-      {/* Typing indicator */}
-      <div className="px-4 py-1 text-xs text-muted-foreground">
-        {typingUsers.length > 0 && (
-          <span>
-            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
-            typing...
-          </span>
-        )}
-      </div>
 
       {/* Form */}
       <form
